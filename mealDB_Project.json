@@ -1,0 +1,221 @@
+{
+	"info": {
+		"_postman_id": "0c123531-6532-46fb-b5ce-bf1668927b56",
+		"name": "My Collection",
+		"description": "### Welcome to Postman! This is your first collection. \n\nCollections are your starting point for building and testing APIs. You can use this one to:\n\n• Group related requests\n• Test your API in real-world scenarios\n• Document and share your requests\n\nUpdate the name and overview whenever you’re ready to make it yours.\n\n[Learn more about Postman Collections.](https://learning.postman.com/docs/collections/collections-overview/)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "50995743",
+		"_collection_link": "https://mithraarun77-9279190.postman.co/workspace/mealdb~b2656edc-e696-45da-a5b5-b7e98b791d9f/collection/50995743-0c123531-6532-46fb-b5ce-bf1668927b56?action=share&source=collection_link&creator=50995743"
+	},
+	"item": [
+		{
+			"name": "Get data",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"let jsonData = pm.response.json();",
+							"let meals = jsonData.meals;",
+							"",
+							"if (!meals || meals.length === 0) {",
+							"    pm.visualizer.set(`<h2>No meals found</h2>`);",
+							"    return;",
+							"}",
+							"",
+							"// Count ingredients",
+							"function countIngredients(meal) {",
+							"    let count = 0;",
+							"    for (let i = 1; i <= 20; i++) {",
+							"        let ing = meal[`strIngredient${i}`];",
+							"        if (ing && ing.trim() !== \"\") count++;",
+							"    }",
+							"    return count;",
+							"}",
+							"",
+							"// Ingredients + measurement",
+							"function getIngredientsWithMeasurements(meal) {",
+							"    let ingredients = [];",
+							"    for (let i = 1; i <= 20; i++) {",
+							"        let ing = meal[`strIngredient${i}`];",
+							"        let measure = meal[`strMeasure${i}`];",
+							"",
+							"        if (ing && ing.trim() !== \"\") {",
+							"            ingredients.push({",
+							"                ingredient: ing.trim(),",
+							"                measurement: (measure && measure.trim() !== \"\") ? measure.trim() : \"To taste\"",
+							"            });",
+							"        }",
+							"    }",
+							"    return ingredients;",
+							"}",
+							"",
+							"// Filter valid meals",
+							"let validMeals = meals",
+							"    .map(m => ({ meal: m, count: countIngredients(m) }))",
+							"    .filter(m => m.count > 0);",
+							"",
+							"// Find min ingredient count",
+							"let minCount = Math.min(...validMeals.map(m => m.count));",
+							"",
+							"let mealsWithLeastIngredients = validMeals",
+							"    .filter(m => m.count === minCount)",
+							"    .map(m => m.meal);",
+							"",
+							"// ---- TEMPLATE ----",
+							"var template = `",
+							"<style>",
+							"body { font-family: Segoe UI; background:#fff; padding:20px; }",
+							".header-info{ text-align:center; margin-bottom:20px;}",
+							".meal-card{",
+							" width:500px; margin:0 auto 25px;",
+							" padding:20px; border-radius:12px;",
+							" background:#fff; box-shadow:0 4px 12px rgba(0,0,0,0.1);",
+							"}",
+							".meal-image{ width:100%; height:230px; object-fit:cover; border-radius:10px }",
+							".meal-name{ text-align:center; font-size:20px; font-weight:700; margin:10px 0 }",
+							".ingredients ul{ padding-left:18px }",
+							".ingredient-badge{",
+							" background:#d1eaff; color:#1a73e8;",
+							" padding:2px 6px; border-radius:6px; font-size:12px;",
+							"}",
+							".yt-btn{",
+							" display:inline-block;",
+							" margin-top:10px;",
+							" padding:8px 12px;",
+							" border-radius:6px;",
+							" background:#ff0000;",
+							" color:#fff;",
+							" text-decoration:none;",
+							" font-weight:bold;",
+							"}",
+							"</style>",
+							"",
+							"<div class=\"header-info\">",
+							"<h2>Meals with Least Ingredients</h2>",
+							"<p>Found {{totalMeals}} meal(s) with {{ingredientCount}} ingredient(s)</p>",
+							"</div>",
+							"",
+							"{{#each meals}}",
+							"<div class=\"meal-card\">",
+							"<img src=\"{{image}}\" class=\"meal-image\">",
+							"<div class=\"meal-name\">{{name}}</div>",
+							"",
+							"<div class=\"ingredients\">",
+							"<b>Ingredients:</b>",
+							"<ul>",
+							"{{#each ingredients}}",
+							"<li><span class=\"ingredient-badge\">{{ingredient}}</span> — {{measurement}}</li>",
+							"{{/each}}",
+							"</ul>",
+							"</div>",
+							"",
+							"<b>Instructions:</b>",
+							"<p>{{instructions}}</p>",
+							"",
+							"{{#if youtube}}",
+							"<a class=\"yt-btn\" href=\"{{{youtube}}}\" target=\"_blank\" rel=\"noopener noreferrer\">",
+							"Watch on YouTube ▶",
+							"</a>",
+							"{{/if}}",
+							"",
+							"</div>",
+							"{{/each}}",
+							"`;",
+							"",
+							"let payload = {",
+							"    meals: mealsWithLeastIngredients.map(m => {",
+							"        let yt = m.strYoutube ? m.strYoutube.trim() : \"\";",
+							"",
+							"        // Force valid YouTube link",
+							"        if (yt && !yt.startsWith(\"http\")) {",
+							"            yt = \"https://www.youtube.com/watch?v=\" + yt;",
+							"        }",
+							"",
+							"        return {",
+							"            name: m.strMeal,",
+							"            image: m.strMealThumb,",
+							"            instructions: m.strInstructions,",
+							"            ingredients: getIngredientsWithMeasurements(m),",
+							"            youtube: yt",
+							"        };",
+							"    }),",
+							"    totalMeals: mealsWithLeastIngredients.length,",
+							"    ingredientCount: minCount",
+							"};",
+							"",
+							"pm.visualizer.set(template, payload);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://www.themealdb.com/api/json/v1/1/search.php?s=pasta",
+					"protocol": "https",
+					"host": [
+						"www",
+						"themealdb",
+						"com"
+					],
+					"path": [
+						"api",
+						"json",
+						"v1",
+						"1",
+						"search.php"
+					],
+					"query": [
+						{
+							"key": "s",
+							"value": "pasta"
+						}
+					]
+				},
+				"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+			},
+			"response": []
+		},
+		{
+			"name": "Post data",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.test(\"Successful POST request\", function () {",
+							"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+							"});",
+							""
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"name\": \"Add your name in the body\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": ""
+				},
+				"description": "This is a POST request, submitting data to an API via the request body. This request submits JSON data, and the data is reflected in the response.\n\nA successful POST request typically returns a `200 OK` or `201 Created` response code."
+			},
+			"response": []
+		}
+	]
+}
