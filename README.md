@@ -49,14 +49,6 @@ This API returns:
 
 ---
 
-## 📂 Repository Contents
-MealDB-Postman-Project/
-├── MealDB_Postman_Collection.json
-├── README.md
-└── screenshots (optional)
-
----
-
 ## 👀 Output
 ✔ Meal Name  
 ✔ Category & Area  
